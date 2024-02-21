@@ -16,4 +16,6 @@ app.use(express.static("public"))//to store general assets(pdf,images,favicon) i
 
 app.use(cookieParser())//in order to peform actions on cookie  
 
+import userRoutes from "./routes/user.routes.js";
+app.use("/api/v1/user",userRoutes)
 export{app}
