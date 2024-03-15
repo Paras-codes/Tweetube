@@ -332,6 +332,79 @@ const updateUseravatar=asyncHandler(async(req,res)=>{
 
 })
 
+const getChannelProfile=asyncHandler(async(req,res)=>{
+    const {username}=req.params;
+
+    const channel=await User.aggregate([
+        {
+            $match:{
+                username:username?.toLowerCase()
+            }
+        },
+        {
+            $lookup:{
+                from: "subscriptions", // The collection to join with
+                localField: "_id", // Field from the current collection (User) to match
+                foreignField: "channel", // Field from the 'subscriptions' collection to match
+                as: "subscribers"//alias name to store the result
+            }
+        },
+        {
+            $lookup: {
+                from: "subscriptions",
+                localField: "_id",
+                foreignField: "subscriber",
+                as: "subscribedTo"
+            }
+        },
+        {
+            $addFields: {
+                subcribersCount: {
+                    $size: "$subscribers"
+                },
+                channelsSubscribedToCount: {
+                    $size: "$subscribedTo"
+                },
+                isSubscribed: {
+                    $cond: {
+                        //"$subscribers.subscriber" is pointing subscriber field in subscribers collection
+                        if: {$in: [req.user?._id, "$subscribers.subscriber"]},//in operator can find if the particular entry is present in the array ,object or not 
+                        then: true,
+                        else: false
+                    }
+                }
+            }
+        },
+        {
+            $project: {
+                fullName: 1,
+                username: 1,
+                email: 1,
+                avatar: 1,
+                coverImage: 1,
+                subcribersCount: 1,
+                channelsSubscribedToCount: 1,
+                isSubscribed: 1
+            }
+        }
+    ])
+
+    if (!channel?.length) {
+        throw new ApiError(404, "channel doesnot exist");
+    }
+    console.log(channel[0]);
+    return res
+        .status(200)
+        .json(
+            new ApiResponse(
+                200,
+                channel[0],
+                "User channel fetced successfully"
+            )
+        )
+})
+
+
 export{
     registerUser,
     loginUser,
@@ -340,5 +413,6 @@ export{
     getCurrentUser,
     changeCurrentPassword,
     updateAccountDetails,
-    updateUseravatar
+    updateUseravatar,
+    getChannelDetail
 }
