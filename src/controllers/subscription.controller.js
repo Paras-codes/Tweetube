@@ -13,8 +13,8 @@ const toggleSubscription = asyncHandler(async (req, res) => {
     }
 
     const user= await Subscription.findOne({
-        subscriber:req.user?.id,
-        channel:channelId
+        subscriber:new Types.ObjectId(req.user?.id),
+        channel:new Types.ObjectId(channelId)
     })
 
     if(user){
@@ -31,11 +31,11 @@ const toggleSubscription = asyncHandler(async (req, res) => {
 
 
     await Subscription.create({
-        subscriber:req.user?.id,
-        channel:channelId
+        subscriber:new Types.ObjectId(req.user?.id),
+        channel:new Types.ObjectId(channelId)
     })
 
-    res
+    return res
     .status(200)
     .json(new ApiResponse(
         200,
@@ -94,7 +94,7 @@ const getUserChannelSubscribers = asyncHandler(async (req, res) => {
         }
     ])
 
-    res
+    return res
     .status(200)
     .json(new ApiResponse(
         200,
@@ -151,7 +151,7 @@ const getSubscribedChannels = asyncHandler(async (req, res) => {
         }
     ])
 
-    res
+    return res
     .status(200)
     .json(new ApiResponse(
         200,

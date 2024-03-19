@@ -1,6 +1,7 @@
 import {v2 as cloudinary} from "cloudinary";
 import fs from "fs";
 import {config} from  "dotenv";
+import { ApiError } from "./ApiError.js";
 config();
 
 
@@ -27,7 +28,33 @@ const uploadOnCloudinary = async (localFilePath) => {
         return null;
     }
 }
+function getPublicId(url) {
+    let urlParts = url.split('/');
+    let publicIdWithExtension = urlParts[urlParts.length - 1];
+    let publicId = publicIdWithExtension.split('.')[0];
+    return publicId;
+}
+const deleteFromCloudinary= async(oldUrl)=>{
+    let publicId = getPublicId(oldUrl);
+   
+    try {
+        let result = await new Promise((resolve, reject) => {
+            cloudinary.uploader.destroy(publicId, function(error, result) {
+                if (error) reject(error);
+                else resolve(result);
+            });
+        });
+
+        return result;
+    } catch (error) {
+        return error;
+    }
+   
+}
 
 
+export {
+    uploadOnCloudinary,
+    deleteFromCloudinary
 
-export {uploadOnCloudinary}
+        }

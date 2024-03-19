@@ -1,4 +1,4 @@
-import { asyncHandler } from "../utils/assyncHandler.js";
+import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { User } from "../models/user.model.js";
@@ -53,7 +53,7 @@ const registerUser=asyncHandler(async(req,res)=>{
     }
 
     console.log(req.files);
-
+     
     const avatarLocalPath=req.files?.avatar[0]?.path;
     let coverImagePath;
     let coverImageLocalPath;
@@ -466,6 +466,6 @@ export{
     changeCurrentPassword,
     updateAccountDetails,
     updateUseravatar,
-    getChannelDetail,
+    getChannelProfile,
     getWatchHistory    
 }
