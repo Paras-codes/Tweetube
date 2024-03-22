@@ -30,7 +30,7 @@ const getAllVideos = asyncHandler(async (req, res) => {
     let videos;
 
     if(!query||query?.trim()===""){
-        videos=Video.aggregate([
+        videos=await Video.aggregate([
             {
                 $match:{
                     owner:new Types.ObjectId(userId)
