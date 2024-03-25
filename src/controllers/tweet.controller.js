@@ -18,7 +18,7 @@ const createTweet = asyncHandler(async (req, res) => {
 
     const tweetDoc=await Tweet.create({
         content:content,
-        owner:new Types.ObjectId(_id)
+        owner:new mongoose.Types.ObjectId(_id)
     })
 
     return res.status(200).json(new ApiResponse(200,tweetDoc,"Tweet published sucessfully"))
@@ -33,7 +33,7 @@ const getUserTweets = asyncHandler(async (req, res) => {
 
     const tweetDoc=await Tweet.aggregate({
         $match:{
-            owner:new Types.ObjectId(_id)
+            owner:new mongoose.Types.ObjectId(_id)
         }
         
     },

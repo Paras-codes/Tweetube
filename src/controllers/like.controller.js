@@ -20,8 +20,8 @@ const toggleVideoLike = asyncHandler(async (req, res) => {
     
     if(!likeDoc){
        await Like.create({
-        video:new Types.ObjectId(videoId),
-        like: new Types.ObjectId(_id)
+        video:new mongoose.Types.ObjectId(videoId),
+        like: new mongoose.Types.ObjectId(_id)
        })
     }
 
@@ -46,8 +46,8 @@ const toggleCommentLike = asyncHandler(async (req, res) => {
     
     if(!likeDoc){
        await Like.create({
-        comment:new Types.ObjectId(commentId),
-        like: new Types.ObjectId(_id)
+        comment:new mongoose.Types.ObjectId(commentId),
+        like: new mongoose.Types.ObjectId(_id)
        })
     }
 
@@ -72,8 +72,8 @@ const toggleTweetLike = asyncHandler(async (req, res) => {
     
     if(!likeDoc){
        await Like.create({
-        tweet:new Types.ObjectId(tweetId),
-        like: new Types.ObjectId(_id)
+        tweet:new mongoose.Types.ObjectId(tweetId),
+        like: new mongoose.Types.ObjectId(_id)
        })
     }
 

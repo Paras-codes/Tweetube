@@ -1,4 +1,4 @@
-import mongoose, { Types, isValidObjectId } from "mongoose"
+import mongoose, { isValidObjectId } from "mongoose"
 import {Comment} from "../models/comment.model.js"
 import {ApiError} from "../utils/ApiError.js"
 import {ApiResponse} from "../utils/ApiResponse.js"
@@ -18,7 +18,7 @@ const getVideoComments = asyncHandler(async (req, res) => {
     const commentDoc=await Comment.aggregate([
         {
             $match:{
-                video:new Types.ObjectId(videoId)
+                video:new mongoose.Types.ObjectId(videoId)
             }
         },
         {
@@ -55,8 +55,8 @@ const addComment = asyncHandler(async (req, res) => {
 
  const commentDoc= await Comment.create({
     content:content,
-    video:new Types.ObjectId(videoId),
-    owner:new Types.ObjectId(_id)
+    video:new mongoose.Types.ObjectId(videoId),
+    owner:new mongoose.Types.ObjectId(_id)
   })
 
   const check=await Comment.findById(commentDoc._id)

@@ -33,7 +33,7 @@ const getAllVideos = asyncHandler(async (req, res) => {
         videos=await Video.aggregate([
             {
                 $match:{
-                    owner:new Types.ObjectId(userId)
+                    owner:new mongoose.Types.ObjectId(userId)
                 }
             },
             {
@@ -55,7 +55,7 @@ const getAllVideos = asyncHandler(async (req, res) => {
     videos=Video.aggregate([
         {
             $match:{
-                owner:new Types.ObjectId(userId)
+                owner:new mongoose.Types.ObjectId(userId)
             }
         },
         {
@@ -102,7 +102,7 @@ const publishAVideo = asyncHandler(async (req, res) => {
         throw new ApiError(404,"User not found")
     }
     
-    const user_id=new Types.ObjectId(id);
+    const user_id=new mongoose.Types.ObjectId(id);
 
     const thumbnailLocalPath=req.files?.thumbnail[0]?.path;
     if(!thumbnailLocalPath){

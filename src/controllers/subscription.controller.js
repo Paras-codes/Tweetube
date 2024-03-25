@@ -13,8 +13,8 @@ const toggleSubscription = asyncHandler(async (req, res) => {
     }
 
     const user= await Subscription.findOne({
-        subscriber:new Types.ObjectId(req.user?.id),
-        channel:new Types.ObjectId(channelId)
+        subscriber:new mongoose.Types.ObjectId(req.user?.id),
+        channel:new mongoose.Types.ObjectId(channelId)
     })
 
     if(user){
@@ -31,8 +31,8 @@ const toggleSubscription = asyncHandler(async (req, res) => {
 
 
     await Subscription.create({
-        subscriber:new Types.ObjectId(req.user?.id),
-        channel:new Types.ObjectId(channelId)
+        subscriber:new mongoose.Types.ObjectId(req.user?.id),
+        channel:new mongoose.Types.ObjectId(channelId)
     })
 
     return res
@@ -60,7 +60,7 @@ const getUserChannelSubscribers = asyncHandler(async (req, res) => {
     const subscribers=await Subscription.aggregate([
         {
             $match:{
-                channel:new Types.ObjectId(channelId)
+                channel:new mongoose.Types.ObjectId(channelId)
             }
         },
         {
@@ -117,7 +117,7 @@ const getSubscribedChannels = asyncHandler(async (req, res) => {
     const subscribedTo=await Subscription.aggregate([
         {
             $match:{
-                subscriber:new Types.ObjectId(subscriberId)
+                subscriber:new mongoose.Types.ObjectId(subscriberId)
             }
         },
         {

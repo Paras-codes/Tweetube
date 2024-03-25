@@ -17,7 +17,7 @@ const createPlaylist = asyncHandler(async (req, res) => {
     //we have to gather user video 
     //matching with a particular description 
     //then create a document of playlist
-    const userId=new Types.ObjectId(id);
+    const userId=new mongoose.Types.ObjectId(id);
     const video_doc=await Video.aggregate([
         {
             $match:{
