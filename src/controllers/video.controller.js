@@ -160,6 +160,9 @@ const getVideoById = asyncHandler(async (req, res) => {
     if(!video_doc){
         throw new ApiError(404,"video not present")
     }
+    const view=video_doc.views;
+    video_doc.views=view+1;
+    video_doc.save();
 
    return  res.status(200)
     .json(
