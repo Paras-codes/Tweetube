@@ -88,9 +88,15 @@ const getLikedVideos = asyncHandler(async (req, res) => {
     {
         throw new ApiError(404,"Unauthourized acess")
     }
-    if(!isValidObjectId(tweetId)){
+    if(!isValidObjectId(_id)){
         throw new ApiError(404,"invalid videId")
     }
+
+    const likes = await Like.find({ likedBy: userId, video: { $exists: true } }).populate('video');
+    
+    const videos = likes.map(like => like.video);
+
+    return res.status(200).json(new ApiResponse(200,videos,"all videos liked by user"))
 })
 
 export {
