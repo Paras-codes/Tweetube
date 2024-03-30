@@ -10,7 +10,7 @@ const userSchema = new Schema(
             unique: true,
             lowercase: true,
             trim: true, 
-            index: true
+            index: true//index should be used only on those fields that are readily searched in every now and then so that cost of db is less 
         },
         email: {
             type: String,
