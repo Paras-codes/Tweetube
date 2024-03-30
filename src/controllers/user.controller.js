@@ -305,19 +305,21 @@ const updateAccountDetails=asyncHandler(async(req,res)=>{
 
 
 const updateUseravatar=asyncHandler(async(req,res)=>{
+    console.log(req.file);
+    console.log(req.user);
     const avatarLocalPath=req.file?.path;
 
     if(!avatarLocalPath){
         throw new ApiError(400,"Avatar file is missing")
     }
 
-    const avatar=uploadOnCloudinary(avatarLocalPath)
+    const avatar=await uploadOnCloudinary(avatarLocalPath)
 
     if(!avatar.url){
-        throw new ApiError(400,"Avatar file is missing");
+        throw new ApiError(400,"cloudinaryAvatar file is missing");
     }
-
-    const user =User.findByIdAndUpdate(
+     
+    const user =await User.findByIdAndUpdate(
         req.user?._id,
         {
             $set:{
@@ -328,7 +330,9 @@ const updateUseravatar=asyncHandler(async(req,res)=>{
         })
         .select("-password -refreshToken")
 
-        res.status(200)
+        console.log(user);
+
+        return res.status(200)
         .json(new ApiResponse(200,user,"avatar updagted sucessfully"));
 
 })
@@ -409,7 +413,7 @@ const getWatchHistory = asyncHandler(async(req, res) => {
     const user = await User.aggregate([
         {
             $match: {
-                _id: new mongoose.Types.ObjectId(req.user._id)
+                _id: new mongoose.Types.ObjectId(req.user?._id)
             }
         },
         {
