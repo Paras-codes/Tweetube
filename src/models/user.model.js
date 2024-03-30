@@ -3,7 +3,8 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 const userSchema = new Schema(
     {
-        userName: {
+        username: {
+            //never change the model name once created especially when index because index are registered when your first user is registered
             type: String,
             required: true,
             unique: true,
