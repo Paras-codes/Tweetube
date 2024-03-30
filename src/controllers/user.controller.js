@@ -74,12 +74,12 @@ const registerUser=asyncHandler(async(req,res)=>{
     }
 
     const user = await User.create({
-        fullName,
+        fullName:fullName,
         avatar: avatar.url,
         coverImage: coverImage?.url|| "",
         email, 
         password,
-        username: username.toLowerCase()
+        userName:username.toLowerCase()
     })
 
     const createdUser = await User.findById(user._id).select(
@@ -105,7 +105,7 @@ const loginUser=asyncHandler(async(req,res)=>{
     //send cookie
 
     const {email, username, password} = req.body
-    console.log(email);
+    console.log({email,username,password});
 
     if (!username && !email) {
         throw new ApiError(400, "username or email is required")
@@ -236,12 +236,13 @@ const changeCurrentPassword=asyncHandler(async(req,res)=>{
     //if yes than update new password 
     const {oldPassword,newPassword}=req.body;
 
+
     if(!oldPassword||!newPassword){
          throw new ApiError(400,"Enter old and new password");
     } 
-
-    const user=await User.findById(req.user?._id).select('-password -refreshToken');
-
+      console.log({oldPassword,newPassword});
+    const user=await User.findById(req.user?._id).select('-refreshToken');
+     
     if(!user){
         throw new ApiError(404,"Unauthourized acess");
     }
@@ -332,7 +333,7 @@ const updateUseravatar=asyncHandler(async(req,res)=>{
 
 })
 
-const getChannelProfile=asyncHandler(async(req,res)=>{
+const getUserChannelProfile=asyncHandler(async(req,res)=>{
     const {username}=req.params;
 
     const channel=await User.aggregate([
@@ -466,6 +467,6 @@ export{
     changeCurrentPassword,
     updateAccountDetails,
     updateUseravatar,
-    getChannelProfile,
+    getUserChannelProfile,
     getWatchHistory    
 }
