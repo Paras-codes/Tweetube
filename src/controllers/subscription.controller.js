@@ -6,7 +6,9 @@ import {asyncHandler} from "../utils/asyncHandler.js"
 
 
 const toggleSubscription = asyncHandler(async (req, res) => {
+    //need to be logged in 
     const {channelId} = req.params
+    console.log(channelId);
    
     if(!isValidObjectId(channelId)){
         throw new ApiError(400,"Invalid channel")
@@ -18,8 +20,13 @@ const toggleSubscription = asyncHandler(async (req, res) => {
     })
 
     if(user){
-      await Subscription.findByIdAndDelete(req.user?._id)
-      res
+    //   await Subscription.findOneAndDelete(  
+    //      {
+    //         subscriber:new mongoose.Types.ObjectId(req.user?.id),
+    //         channel:new mongoose.Types.ObjectId(channelId)
+    //     })
+   await user.deleteOne()
+      return  res
       .status(200)
       .json(new ApiResponse(
           200,
@@ -51,7 +58,9 @@ const toggleSubscription = asyncHandler(async (req, res) => {
 
 // controller to return subscriber list of a channel
 const getUserChannelSubscribers = asyncHandler(async (req, res) => {
-    const {channelId} = req.params
+    console.log(req.user);
+    const channelId = req.user._id;
+    console.log(channelId);
     
     if(!isValidObjectId(channelId)){
         throw new ApiError(400,"Invalid channel")
@@ -107,10 +116,10 @@ const getUserChannelSubscribers = asyncHandler(async (req, res) => {
 
 // controller to return channel list to which user has subscribed
 const getSubscribedChannels = asyncHandler(async (req, res) => {
-    const { subscriberId } = req.params
+    const  subscriberId  = req.user?._id
 
        
-    if(!isValidObjectId(channelId)){
+    if(!isValidObjectId(subscriberId)){
         throw new ApiError(400,"Invalid channel")
     }
 
