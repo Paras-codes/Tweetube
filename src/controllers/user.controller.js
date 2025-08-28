@@ -5,6 +5,7 @@ import { User } from "../models/user.model.js";
 import {ApiResponse} from "../utils/ApiResponse.js"
 import sendEmail from "../utils/sendEmail.js";
 import jwt from "jsonwebtoken";
+import bcrypt from "bcryptjs";
 
 
 const generateAccessAndRefereshTokens = async(userId) =>{
@@ -75,6 +76,9 @@ const registerUser=asyncHandler(async(req,res)=>{
     if(!avatar){
         throw new ApiError(400,"avatar file is not uploaded");
     }
+    const salt = await bcrypt.genSalt(10);
+    password = await bcrypt.hash(password, salt);
+
 
     const user = await User.create({
         fullName:fullName,
@@ -469,7 +473,7 @@ const { email } = req.body;
   const user = await User.findOne({ email });
   if (!user) return res.status(404).json({ message: "User not found" });
 
-  console.log("1 step");
+ 
   
   // generate short-lived token
   const token = jwt.sign({ id: user._id },  process.env.ACCESS_TOKEN_SECRET, { expiresIn: "15m" });
@@ -477,7 +481,7 @@ const { email } = req.body;
   const resetUrl = `http://localhost:3000/reset-password?token=${token}`;
 
   // send email
-  console.log("2 step");
+
   
   try{
   await sendEmail(user.email, "Password Reset Request", `<p>Click here to reset password: <a href="${resetUrl}">${resetUrl}</a></p>`);
@@ -489,7 +493,29 @@ const { email } = req.body;
   
   return res.json({ message: "Reset link sent to email" });
 });
+const resetpassword=( async (req, res) => {
+  const { password } = req.body;
+  const {token} = req.query;
+console.log(token);
 
+
+  try {
+    // verify token
+    const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET );
+
+    const user = await User.findById(decoded.id);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    // hash new password
+    const salt = await bcrypt.genSalt(10);
+    user.password = await bcrypt.hash(password, salt);
+
+    await user.save();
+    res.json({ message: "Password updated successfully" });
+  } catch (err) {
+    return res.status(400).json({ message: "Invalid or expired token" });
+  }
+});
 
 export{
     registerUser,
@@ -502,6 +528,7 @@ export{
     updateUseravatar,
     getUserChannelProfile,
     getWatchHistory,
-    forgotPassword    
+    forgotPassword,
+    resetpassword   
 }
 
