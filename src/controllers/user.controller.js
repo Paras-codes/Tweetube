@@ -3,6 +3,9 @@ import { ApiError } from "../utils/ApiError.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { User } from "../models/user.model.js";
 import {ApiResponse} from "../utils/ApiResponse.js"
+import sendEmail from "../utils/sendEmail.js";
+import jwt from "jsonwebtoken";
+
 
 const generateAccessAndRefereshTokens = async(userId) =>{
     try {
@@ -461,6 +464,33 @@ const getWatchHistory = asyncHandler(async(req, res) => {
             )
         )
 });
+const forgotPassword=asyncHandler(async(req,res)=>{
+const { email } = req.body;
+  const user = await User.findOne({ email });
+  if (!user) return res.status(404).json({ message: "User not found" });
+
+  console.log("1 step");
+  
+  // generate short-lived token
+  const token = jwt.sign({ id: user._id },  process.env.ACCESS_TOKEN_SECRET, { expiresIn: "15m" });
+
+  const resetUrl = `http://localhost:3000/reset-password?token=${token}`;
+
+  // send email
+  console.log("2 step");
+  
+  try{
+  await sendEmail(user.email, "Password Reset Request", `<p>Click here to reset password: <a href="${resetUrl}">${resetUrl}</a></p>`);
+
+  }catch(error){
+    console.error("Error sending email:", error);
+    return res.status(500).json({ message: "Error sending email" });
+  }
+  
+  return res.json({ message: "Reset link sent to email" });
+});
+
+
 export{
     registerUser,
     loginUser,
@@ -471,6 +501,7 @@ export{
     updateAccountDetails,
     updateUseravatar,
     getUserChannelProfile,
-    getWatchHistory    
+    getWatchHistory,
+    forgotPassword    
 }
 
