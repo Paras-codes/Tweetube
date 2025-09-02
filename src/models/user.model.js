@@ -32,6 +32,18 @@ const userSchema = new Schema(
         coverImage: {
             type: String, // cloudinary url
         },
+        exclusivemembers:[
+            {
+                type:Schema.Types.ObjectId,
+                ref:"User"
+            }
+        ],
+        exclusivemembership:[
+            {
+                type:Schema.Types.ObjectId,
+                ref:"User"
+            }
+        ],
         watchHistory: [
             {
                 type: Schema.Types.ObjectId,

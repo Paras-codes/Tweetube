@@ -3,8 +3,54 @@ import { Subscription } from "../models/subscription.model.js"
 import {ApiError} from "../utils/ApiError.js"
 import {ApiResponse} from "../utils/ApiResponse.js"
 import {asyncHandler} from "../utils/asyncHandler.js"
+import { User } from "../models/user.model.js"
+import  {razorpay} from "../utils/razorpay.js"
 
+const createPrimeSubscription=asyncHandler(async (req, res)=>{
+// Assuming you have User model and Subscription model imported
 
+const { plan_id, customer_notify = 1, total_count = 1, username } = req.body;
+const channel = await User.findOne({username}); 
+if(!plan_id)
+{
+    throw new ApiError(400,"plan id is required");
+}
+if(!channel) {
+     throw new ApiError(400,"channel not found");
+}
+
+const isSubscribed = await Subscription.findOne({
+  subscriber: new mongoose.Types.ObjectId(req.user?._id),
+  channel: new mongoose.Types.ObjectId(channel._id)
+});
+
+if (!isSubscribed) {
+    await Subscription.create({
+        subscriber:new mongoose.Types.ObjectId(req.user?._id),
+        channel:new mongoose.Types.ObjectId(channel._id)
+    }) 
+} 
+try{
+const subscription = await razorpay.subscriptions.create({
+  plan_id,
+  total_count,
+  customer_notify,   // tells Razorpay to notify customer
+  customer: {
+    email: `${req.user?.email}`
+  },
+  notes: {
+    project: `applying  for the membership of ${username}`
+  }
+})
+ return res.status(201).json(
+        new ApiResponse(200,subscription, "subscription created successfully")
+    )
+
+}
+catch(err){
+    throw new ApiError(500,["Razorpay error",err])
+}
+})
 const toggleSubscription = asyncHandler(async (req, res) => {
     //need to be logged in 
     const {channelId} = req.params
@@ -174,5 +220,6 @@ const getSubscribedChannels = asyncHandler(async (req, res) => {
 export {
     toggleSubscription,
     getUserChannelSubscribers,
-    getSubscribedChannels
+    getSubscribedChannels,
+    createPrimeSubscription
 }
