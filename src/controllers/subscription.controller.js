@@ -6,6 +6,26 @@ import {asyncHandler} from "../utils/asyncHandler.js"
 import { User } from "../models/user.model.js"
 import  {razorpay} from "../utils/razorpay.js"
 
+const addPrimeMembership = asyncHandler(async (req, res) => {
+try{
+  const { subscriber, channel } = req.body;
+    if (!subscriber || !channel) {
+        throw new ApiError(400, "Subscriber and channel are required");
+    }
+    const subscribedUser=await User.findOne({subscriber})
+    const subscribedChannel=await User.findOne({channel})
+    subscribedUser.exclusivemembership=subscribedChannel;
+    await subscribedUser.save();
+    subscribedChannel.exclusivemembers=subscribedUser;
+    await subscribedChannel.save();
+    res.status(200).json(new ApiResponse(200, { subscribed: true }, "membership activated"));
+}
+catch(err){
+    throw new ApiError(500, [err]);
+}
+
+});
+
 const createPrimeSubscription=asyncHandler(async (req, res)=>{
 // Assuming you have User model and Subscription model imported
 
@@ -221,5 +241,6 @@ export {
     toggleSubscription,
     getUserChannelSubscribers,
     getSubscribedChannels,
-    createPrimeSubscription
+    createPrimeSubscription,
+    addPrimeMembership
 }
