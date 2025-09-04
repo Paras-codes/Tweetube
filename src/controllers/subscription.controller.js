@@ -6,6 +6,63 @@ import {asyncHandler} from "../utils/asyncHandler.js"
 import { User } from "../models/user.model.js"
 import  {razorpay} from "../utils/razorpay.js"
 
+
+const razorpayWebhookHandler = asyncHandler(async (req, res) => {
+  try {
+    const secret = process.env.RAZORPAY_WEBHOOK_SECRET;
+
+    // Compute HMAC from raw body
+    const shasum = crypto.createHmac("sha256", secret);
+    shasum.update(req.body);
+    const digest = shasum.digest("hex");
+
+    const signature = req.headers["x-razorpay-signature"];
+
+    if (digest === signature) {
+      // Parse raw body only AFTER verifying signature
+      const event = JSON.parse(req.body.toString());
+      console.log("✅ Verified webhook event:", event.event);
+
+      if (event.event === "payment.captured") {
+        const payment = event.payload.payment.entity;
+
+        // retrieve notes
+        const subscriberId = payment.notes.subscriber;
+        const channelId = payment.notes.channel;
+        const email = payment.email || payment.contact;
+
+        console.log(
+          "Payment captured for subscriber:",
+          subscriberId,
+          "channel:",
+          channelId,
+          "email:",
+          email
+        );
+ if (!subscriberId || !channelId) {
+        throw new ApiError(400, "Subscriber and channel are required");
+    }
+    const subscribedUser=await User.findOne({subscriberId})
+    const subscribedChannel=await User.findOne({channelId})
+    subscribedUser.exclusivemembership.push(subscribedChannel._id)   
+    await subscribedUser.save();
+    subscribedChannel.exclusivemembers.push(subscribedUser._id);
+    await subscribedChannel.save();
+    res.status(200).json(new ApiResponse(200, { subscribed: true }, "membership activated"));
+        // Example: activate subscriber membership
+        
+      }
+
+      return res.json({ status: "ok" });
+    } else {
+      console.log("❌ Invalid signature");
+      return res.status(400).send("Invalid signature");
+    }
+  } catch (error) {
+    console.error("⚠️ Webhook error:", error);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+});
 const addPrimeMembership = asyncHandler(async (req, res) => {
 try{
   const { subscriber, channel } = req.body;
@@ -14,9 +71,9 @@ try{
     }
     const subscribedUser=await User.findOne({subscriber})
     const subscribedChannel=await User.findOne({channel})
-    subscribedUser.exclusivemembership=subscribedChannel;
+    subscribedUser.exclusivemembership=new mongoose.Types.ObjectId(subscribedChannel._id);
     await subscribedUser.save();
-    subscribedChannel.exclusivemembers=subscribedUser;
+    subscribedChannel.exclusivemembers=new mongoose.Types.ObjectId(subscribedUser._id);
     await subscribedChannel.save();
     res.status(200).json(new ApiResponse(200, { subscribed: true }, "membership activated"));
 }
@@ -52,15 +109,18 @@ if (!isSubscribed) {
 } 
 try{
 const subscription = await razorpay.subscriptions.create({
-  plan_id,
-  total_count,
-  customer_notify,   // tells Razorpay to notify customer
-  customer: {
-    email: `${req.user?.email}`
-  },
-  notes: {
-    project: `applying  for the membership of ${username}`
-  }
+      plan_id,
+      total_count,
+      customer_notify: 1,  // ✅ Razorpay will email the link to the customer
+      customer: {
+        email: req.user?.email,       // email of your logged-in user
+        contact: req.user?.phone || "" // optional but recommended
+      },
+      notes: {
+        subscriber: req.user?._id,
+        channel: channel._id,
+        project: `applying for the membership of ${username}`
+      }
 })
  return res.status(201).json(
         new ApiResponse(200,subscription, "subscription created successfully")
@@ -242,5 +302,6 @@ export {
     getUserChannelSubscribers,
     getSubscribedChannels,
     createPrimeSubscription,
-    addPrimeMembership
+    addPrimeMembership,
+    razorpayWebhookHandler
 }
